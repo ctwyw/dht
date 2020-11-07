@@ -82,7 +82,7 @@ func (s *Server) Announce(infoHash [20]byte, port int, impliedPort bool, opts ..
 	}
 	infoHashInt160 := int160FromByteArray(infoHash)
 	a := &Announce{
-		Peers:                make(chan PeersValues, 100),
+		Peers:                make(chan PeersValues),
 		values:               make(chan PeersValues),
 		server:               s,
 		infoHash:             infoHashInt160,
@@ -322,7 +322,7 @@ func (a *Announce) run() {
 				if tx.Get(a.doneVar).(bool) || a.getPending(tx) == 0 && a.getPendingAnnouncePeers(tx).Len() == 0 {
 					return txResT{done: true}
 				}
-				panic(stm.Retry)
+				return tx.Retry()
 			},
 		)).(txResT)
 		if txRes.done {
