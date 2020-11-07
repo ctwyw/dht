@@ -13,6 +13,7 @@ import (
 	"github.com/anacrolix/stm"
 	"github.com/anacrolix/stm/stmutil"
 	"github.com/benbjohnson/immutable"
+	"office.xiaokuai.com/wangyw/auffiz.git/help"
 
 	"github.com/anacrolix/dht/v2/krpc"
 )
@@ -72,6 +73,9 @@ func Scrape() AnnounceOpt { return scrape }
 // caller, and announcing the local node to each responding node if port is non-zero or impliedPort
 // is true.
 func (s *Server) Announce(infoHash [20]byte, port int, impliedPort bool, opts ...AnnounceOpt) (*Announce, error) {
+
+	help.Debug()
+
 	startAddrs, err := s.traversalStartingNodes()
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"net"
@@ -20,6 +21,7 @@ import (
 	"github.com/anacrolix/torrent/logonce"
 	"github.com/anacrolix/torrent/metainfo"
 	"github.com/pkg/errors"
+	"office.xiaokuai.com/wangyw/auffiz.git/help"
 
 	"github.com/anacrolix/stm"
 
@@ -227,6 +229,11 @@ func (s *Server) processPacket(b []byte, addr Addr) {
 		return
 	}
 	var d krpc.Msg
+
+	// todo unexpect low version
+	b = b[4:]
+	// todo
+
 	err := bencode.Unmarshal(b, &d)
 	if _, ok := err.(bencode.ErrUnusedTrailingBytes); ok {
 		// log.Printf("%s: received message packet with %d trailing bytes: %q", s, _err.NumUnusedBytes, b[len(b)-_err.NumUnusedBytes:])
@@ -489,7 +496,20 @@ func (s *Server) reply(addr Addr, t string, r krpc.Return) {
 		panic(err)
 	}
 	log.Fmsg("replying to %q", addr).Log(s.logger())
-	wrote, err := s.writeToNode(context.Background(), b, addr, false, true)
+
+	// todo import 4 byte to disable forbid
+	var x = make([]byte, len(b)+4)
+	_, err = io.ReadFull(rand.Reader, x[0:4])
+	if err != nil {
+		panic(err)
+	}
+	x[0] = 'd'
+	copy(x[4:], b[:])
+
+
+	wrote, err := s.writeToNode(context.Background(), x, addr, false, true)
+
+	// todo
 	if err != nil {
 		s.config.Logger.Printf("error replying to %s: %s", addr, err)
 	}
@@ -688,6 +708,21 @@ func (s *Server) makeQueryBytes(q string, a *krpc.MsgArgs, t string) []byte {
 	if err != nil {
 		panic(err)
 	}
+
+	// todo
+	var x = make([]byte, len(b)+4)
+	_, err = io.ReadFull(rand.Reader, x[0:4])
+	if err != nil {
+		panic(err)
+	}
+	x[0] = 'd'
+	copy(x[4:], b[:])
+
+	log.Printf(" \n %v", hex.Dump(x))
+
+	return x
+	// todo
+
 	return b
 }
 
@@ -772,6 +807,9 @@ func (s *Server) transactionQuerySender(sendCtx context.Context, b []byte, write
 
 // Sends a ping query to the address given.
 func (s *Server) Ping(node *net.UDPAddr, callback func(krpc.Msg, error)) error {
+	// todo
+	help.Debug()
+
 	return s.ping(node, callback)
 }
 
